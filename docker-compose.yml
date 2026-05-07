@@ -1,7 +1,7 @@
 services:
 
   sushi-music:
-    build: .
+    image: ghcr.io/pinont/sushi-music:latest
     container_name: sushi-music
     restart: unless-stopped
     env_file: .env
