@@ -1,0 +1,29 @@
+services:
+
+  sushi-music:
+    build: .
+    container_name: sushi-music
+    restart: unless-stopped
+    env_file: .env
+    network_mode: host          # required for Discord UDP voice traffic
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: sushi-postgres
+    restart: unless-stopped
+    env_file: .env              # picks up POSTGRES_* vars from the same .env
+    ports:
+      - "127.0.0.1:5432:5432"  # only accessible from localhost — not public
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sushimusic -d sushimusic"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:
