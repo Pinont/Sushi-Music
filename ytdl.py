@@ -16,18 +16,6 @@ _BASE_OPTS = {
     "postprocessors": [],   # no post-processing — stream directly
 }
 
-# Use youtube music extractor when available, fall back to ytsearch1
-_YTM_EXTRACTOR = "https://music.youtube.com/search?q="
-
-
-def _make_search_query(query: str) -> str:
-    """Return a yt-dlp compatible query string."""
-    if query.startswith("http://") or query.startswith("https://"):
-        return query
-    # Use YouTube Music search URL directly — avoids ytmsearch scheme issues
-    return f"https://music.youtube.com/search?q={query.replace(' ', '+')}"
-
-
 # ── Stream URL (no download) ───────────────────────────────────────────────────
 async def stream_url_for_query(query: str) -> tuple[str | None, dict | None]:
     """

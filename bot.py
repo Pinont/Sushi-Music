@@ -38,10 +38,12 @@ class SushiMusic(commands.Bot):
         )
 
 
-bot = SushiMusic()
-
-if __name__ == "__main__":
+async def main():
     token = os.getenv("DISCORD_TOKEN")
     if not token:
         raise ValueError("DISCORD_TOKEN is not set in .env")
-    bot.run(token)
+    async with SushiMusic() as bot:
+        await bot.start(token)
+
+if __name__ == "__main__":
+    asyncio.run(main())

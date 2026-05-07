@@ -111,7 +111,11 @@ class AnalyticsDB:
         source_url: str = "",
     ):
         """Insert one play event. Non-blocking — fails silently if DB is down."""
-        await self._ready.wait()
+        try:
+            await asyncio.wait_for(self._ready.wait(), timeout=5.0)
+        except asyncio.TimeoutError:
+            log.warning("Analytics DB not ready — skipping record_play")
+            return
         async with self._pool.acquire() as conn:
             await conn.execute(
                 """
@@ -134,7 +138,7 @@ class AnalyticsDB:
         year: Optional[int] = None,
     ) -> WrappedStats:
         """Compute per-user Wrapped stats for a given year (default: current year)."""
-        await self._ready.wait()
+        await asyncio.wait_for(self._ready.wait(), timeout=10.0)
         year = year or datetime.now(timezone.utc).year
         gid, uid = str(guild_id), str(user_id)
         y_start = datetime(year, 1, 1,  tzinfo=timezone.utc)
@@ -260,7 +264,7 @@ class AnalyticsDB:
         self, guild_id: int, year: Optional[int] = None
     ) -> dict:
         """Server-wide Wrapped stats across all users for a given year."""
-        await self._ready.wait()
+        await asyncio.wait_for(self._ready.wait(), timeout=10.0)
         year = year or datetime.now(timezone.utc).year
         gid    = str(guild_id)
         y_start = datetime(year, 1, 1,  tzinfo=timezone.utc)

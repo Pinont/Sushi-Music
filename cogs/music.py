@@ -5,6 +5,7 @@ from discord.ext import commands
 from discord import app_commands
 from dataclasses import dataclass
 from typing import Optional
+from datetime import datetime, timezone
 import ytdl as ytdl_helper
 import analytics as analytics_db
 
@@ -363,7 +364,6 @@ class MusicCog(commands.Cog):
     @app_commands.describe(year="Year to show stats for (default: current year)")
     async def wrapped(self, interaction: discord.Interaction, year: Optional[int] = None):
         await interaction.response.defer(thinking=True)
-        from datetime import datetime, timezone
         year = year or datetime.now(timezone.utc).year
         stats = await analytics_db.db.get_wrapped(
             guild_id=interaction.guild_id,
@@ -436,7 +436,6 @@ class MusicCog(commands.Cog):
     @app_commands.describe(year="Year to show stats for (default: current year)")
     async def server_wrapped(self, interaction: discord.Interaction, year: Optional[int] = None):
         await interaction.response.defer(thinking=True)
-        from datetime import datetime, timezone
         year = year or datetime.now(timezone.utc).year
         data = await analytics_db.db.get_guild_wrapped(
             guild_id=interaction.guild_id,
@@ -532,7 +531,8 @@ class MusicCog(commands.Cog):
         state.current_user_id = user_id
 
         # If URL is a YouTube page URL (from playlist), resolve stream URL now
-        if url.startswith("https://www.youtube.com") or url.startswith("https://youtu"):
+        # Check for watch/short page URLs only — not already-resolved stream URLs
+        if "youtube.com/watch" in url or "youtu.be/" in url or "youtube.com/shorts" in url:
             resolved, _ = await ytdl_helper.stream_url_for_query(url)
             if not resolved:
                 log.warning(f"Could not resolve stream for: {track.title} — skipping")
